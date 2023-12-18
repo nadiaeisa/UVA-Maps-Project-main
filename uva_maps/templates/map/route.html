@@ -1,0 +1,347 @@
+<!-- 
+*  REFERENCES
+*  Title: Python Django Application Walkthrough Tutorial for Google Maps
+*  Author: Did Coding
+*  Date: 4/2/2021
+*  Code version: Django==3.1.7
+*  URL: https://www.youtube.com/watch?v=wCn8WND-JpU
+*  Software License: N/A
+* 
+*  Title: Adding Markers to a Google Map
+*  Author: Jim Detwiler, John A. Dutton e-Education Institute, College of Earth and Mineral Sciences, The Pennsylvania State University
+*  Date: N/A
+*  Code version: N/A
+*  URL: https://www.e-education.psu.edu/geog863_gmaps/l3_p7.html
+*  Software License: Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License 
+*
+*  Title: Google Maps Tutorial
+*  Author: W3Schools
+*  Date: N/A
+*  Code version: N/A
+*  URL: https://www.w3schools.com/graphics/google_maps_intro.
+*  Software License: N/A
+*
+*  Title: Simple Click Events
+*  Author: Google Maps Platform
+*  Date: 11/16/2023
+*  Code version: N/A
+*  URL: https://developers.google.com/maps/documentation/javascript/examples/event-simple
+*  Software License: Creative Commons Attribution 4.0 License, Apache 2.0 License 
+*
+*  Title: Make Markers Clickable and Accessible
+*  Author: Google Maps Platform
+*  Date: 11/16/2023
+*  Code version: N/A
+*  URL: https://developers.google.com/maps/documentation/javascript/advanced-markers/accessible-markers#:~:text=To%20make%20a%20marker%20clickable,a%20marker%2C%20use%20the%20AdvancedMarkerElement. 
+*  Software License: Creative Commons Attribution 4.0 License, Apache 2.0 License
+*
+*  Title: How to get google maps current location in web app?
+*  Author: Nitesh Pandey
+*  Date: 12/26/2018
+*  Code version: N/A
+*  URL: https://www.outsystems.com/forums/discussion/34814/how-to-get-google-maps-current-location-in-web-app/
+*  Software License: N/A
+*
+*  Title: Reverse Geocoding (Address Lookup)
+*  Author: Google Maps Platform
+*  Date: 11/16/2023
+*  Code version: N/A
+*  URL: https://developers.google.com/maps/documentation/javascript/geocoding#ReverseGeocoding
+*  Software License: Creative Commons Attribution 4.0 License, Apache 2.0 License 
+-->
+
+{% extends 'map/base.html' %}
+{% load static %}
+
+{% block extend_head %}
+
+<script src='https://www.google.com/recaptcha/api.js?render={{recaptcha_site_key}}'></script>
+
+{% endblock %}
+
+{% block extend_nav %} 
+
+<style>
+  ul.sidenav {
+    width: 200px; 
+  }
+
+  .logo {
+    max-width: 150px; 
+  }
+</style>
+
+{% if user.is_staff %}
+  <ul class="sidenav">
+    <li class="logo-container">
+      <img src="{% static 'images/uvalogo.png' %}" alt="Logo" class="logo">
+    </li>
+    <li><a class="active" href="{% url 'route' %}">Directions</a></li>
+    <li><a href="{% url 'uva_maps:user_feedback' %}">Request a Location</a></li>
+    <li><a href="{% url 'uva_maps:admin_approval' %}">Approve Location Requests</a></li>
+    <li><a href="{% url 'account_logout' %}">Logout</a></li>
+  </ul>
+{% else %}
+  <ul class="sidenav">
+    <li class="logo-container">
+      <img src="{% static 'images/uvalogo.png' %}" alt="Logo" class="logo">
+    </li>
+
+    <li><a class="active" href="{% url 'route' %}">Directions</a></li>
+    <li><a href="{% url 'uva_maps:user_feedback' %}">Request a Location</a></li>
+    <li><a href="{% url 'account_logout' %}">Logout</a></li>
+  </ul>
+{% endif %}
+
+{% endblock %}
+
+
+{% block content %}
+<style>
+  .div-container {
+    margin-left: 200px; 
+  }
+
+  h2 {
+    text-align: center;
+  }
+
+</style>
+
+<h2 style="text-align: center; font-family: 'Georgia', sans-serif; color: #000000;">UVA Maps</h2>
+
+<div style="margin-top: 20px; margin-bottom: 20px; background-color: #f4f4f4; border-radius: 8px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+  <label for="id-google-address-a" style="display: block; font-family: Georgia, sans-serif; color: #333; font-size: 16px; margin-bottom: 5px;">Start Address</label>
+    <input type="text" placeholder="Finding current location... for manual entry use format: address, city, state zipcode" id="id-google-address-a" name="google_address_a" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-family: 'Arial', sans-serif;">
+  <label for="id-google-address-b" style="display: block; font-family: Georgia, sans-serif; color: #333; font-size: 16px; margin-bottom: 5px;">Destination Address</label>
+    <input type="text" placeholder="Click on a marker" id="id-google-address-b" name="google_address_b" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-family: 'Arial', sans-serif;" readonly>
+           <button id="get-directions-button" style="width: 100%; padding: 10px; border: none; border-radius: 4px; background-color: #000080; color: white; font-family: 'Verdana', sans-serif; font-size: 20px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: background-color 0.3s;" 
+           onmouseover="this.style.backgroundColor='#000040'" onmouseout="this.style.backgroundColor='#000080'">Get Directions</button>
+</div>
+
+
+  <div id="locationDescription"
+    style="margin-top: 20px; margin-bottom: 20px; background-color: #f4f4f4; border-radius: 8px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+    <h3 id="placeHeader"
+      style="font-family: Georgia, sans-serif; color: #333; font-size: 22px; text-align: center; margin: 0 0 10px 0;">
+      Description</h3>
+    <p id="placeDescription"
+      style="font-family: Georgia, sans-serif; color: #333; font-size: 15px; text-align: center; margin: 0; margin-bottom: 10px;">Click on a
+      marker to see the place description.</p>
+  
+    <br>
+    <h4 style="font-family: Georgia, sans-serif; color: #333; font-size: 22px; text-align: center; margin: 0 0 10px 0;">
+      How busy is this place right now (1-5)?</h4>
+    <p id="rating" style="font-family: Georgia, sans-serif; color: #333; font-size: 15px; text-align: center; margin: 0;">
+      Click on a marker to rate it. You may only rate once an hour. </p>
+      <p id="averageRating"
+      style="font-family: Georgia, sans-serif; color: #333; font-size: 15px; text-align: center; margin: 0; margin-top: 5px; ">Your original rating can be overwritten.</p>
+
+
+   <input type="hidden" class="geo" id="id-lat-a" value="">
+   <input type="hidden" class="geo" id="id-long-a" value="">
+   <input type="hidden" class="geo" id="id-lat-b" value="">
+   <input type="hidden" class="geo" id="id-long-b" value="">
+</style>
+
+</div>
+ 
+<div id="googleMap" style="width:100%;height:700px;"></div> 
+
+<script>
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function getCSRFToken() {
+    return getCookie('csrftoken');
+}
+
+function submitRating(feedbackId) {
+    var selectedRating = document.querySelector(`#rating-${feedbackId}`).value;
+    fetch(`/uva_maps/submit_rating/${feedbackId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: `rating=${selectedRating}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if(data.newAverage !== undefined) {
+        const ratingElement = document.querySelector(`#averageRating`);
+        if(!data.newAverage.toString().includes(".")) {
+            data.newAverage = data.newAverage.toString() + ".0";
+        }
+        ratingElement.innerText = 'Average rating (past hour): ' + data.newAverage.toString();
+    }
+})
+
+    .catch(error => console.error('Error:', error));
+}
+
+function createFreshGeocoder() {
+  return new google.maps.Geocoder();
+}
+
+function myMap() {
+  google.maps.event.addDomListener(window, 'load', function() {
+  var mapProp= {
+    center:new google.maps.LatLng(39.5, -78.5),
+    zoom:14.5,
+
+    styles: [
+      {
+        featureType: "poi",
+        elementType: "labels",
+        stylers: [
+          { visibility: "off" }
+        ]
+      }
+    ]
+    };
+var map = new google.maps.Map(document.getElementById("googleMap"),mapProp);
+
+  if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(getPosition, function(error) {
+            window.alert("Current location not available, please enter address in format: address, city, state zipcode");
+            document.getElementById('id-google-address-a').placeholder = "Enter location in format: address, city, state zipcode";
+            document.getElementById('id-google-address-a').readOnly = false;
+             });
+          } else {
+             x.innerHTML = "Geolocation is not supported by this browser.";
+      }
+
+      function getPosition(position) {
+           var cur_lat = position.coords.latitude;
+           var cur_long = position.coords.longitude;
+           const geocoder = new google.maps.Geocoder();
+           const latlng = {
+              lat: parseFloat(cur_lat),
+              lng: parseFloat(cur_long),
+             };
+
+           geocoder
+           .geocode({location:latlng})
+           .then((response) => {
+              if (response.results[0]) {
+                document.getElementById("id-google-address-a").value = response.results[0].formatted_address
+      } else {
+        window.alert("No results found");
+      }
+    })
+    .catch((e) => window.alert("Geocoder failed due to: " + e));
+}
+
+var approvedFeedbackData = {{ approved_feedback|safe }};
+var myDescription = localStorage.getItem('myDescription') || 'Come Visit!';
+        approvedFeedbackData.forEach(function(entry) {
+          var tempGeocoder = createFreshGeocoder();
+          const geocoder = new google.maps.Geocoder();
+            geocoder.geocode({ address: entry.address }, function(results, status) {
+                if (status === 'OK' && results[0]) {
+                  var tempLatitude = results[0].geometry.location.lat();
+                  var tempLongitude = results[0].geometry.location.lng();
+                    var tempLatLng = new google.maps.LatLng(tempLatitude, tempLongitude);
+                    var tempMarkerOptions = {
+                        position: tempLatLng,
+                        map: map,
+                        title: entry.place,
+                    };
+
+                    var tempMarker = new google.maps.Marker(tempMarkerOptions);
+                    var tempInfowindow = new google.maps.InfoWindow();
+                    var infoWindowContent = '<div style="padding: 1x; border-radius: 1px; font-size: 10px;">' + tempMarker.title + '</div>';
+                    tempInfowindow.setContent(infoWindowContent);
+                    tempInfowindow.open(map, tempMarker);
+
+                 tempMarker.addListener("click", () => {
+                    map.setZoom(18);
+                    map.setCenter(tempMarker.getPosition());
+                    var adminDescription = entry.description || 'Description not available';
+                    document.getElementById("placeDescription").innerHTML = adminDescription;
+                    document.getElementById("id-google-address-b").value = entry.address;
+                    document.getElementById("placeHeader").innerHTML = entry.place;
+                     fetch(`/uva_maps/get_updated_rating/${entry.id}/`)
+                         .then(response => response.json())
+                         .then(data => {
+                        if (data.updatedRating !== undefined) {
+                            if (data.updatedRating === 0) {
+                                document.getElementById("averageRating").innerHTML = 'Average rating (past hour) not available';
+                            } else {
+                                if(!data.updatedRating.toString().includes(".")){
+                                    data.updatedRating = data.updatedRating.toString() + ".0";
+                                }
+                                document.getElementById("averageRating").innerHTML = 'Average rating (past hour): ' + data.updatedRating.toString();
+                            }
+                } else {
+                    document.getElementById("averageRating").innerHTML = 'Average rating (past hour) not available';
+                }
+                    document.querySelector(`#rating`).innerHTML = '<div>' +
+                             '<select id="rating-' + entry.id + '" name="rating" style="width: 60px; margin-right: 20px;">' +
+                             '<option value="1">1</option>' +
+                             '<option value="2">2</option>' +
+                             '<option value="3">3</option>' +
+                             '<option value="4">4</option>' +
+                             '<option value="5">5</option>' +
+                             '</select>' +
+                             '<button type="button" onclick="submitRating(' + entry.id + ')" style="margin-top: 5px; padding: 6px 12px; border: none; border-radius: 4px; background-color: #5e5e5e; color: white; font-family: Roboto, sans-serif; font-size: 18px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: background-color 0.3s;" onmouseover="this.style.backgroundColor=\'#3a3a3a\'" onmouseout="this.style.backgroundColor=\'#5e5e5e\'" >Rate</button>' +
+                             '</div>';
+
+         })
+         .catch(error => {
+               console.error('Error:', error);
+              document.getElementById("averageRating").innerHTML = 'Error fetching rating';
+            });
+         window.scrollTo({ top: 0, behavior: 'smooth' });
+
+});
+
+
+                     google.maps.event.addListener(tempInfowindow, 'domready', function() {
+                        var closeButtons = document.querySelectorAll('.gm-ui-hover-effect');
+                        closeButtons.forEach(function(btn) {
+                            btn.style.display = 'none';
+                        });
+                    });
+                }
+                else {
+                  console.log('Geocoding failed for ' + entry.address + ' with status:', status);
+                }
+            });
+        });
+    });
+}
+
+myMap();
+
+</script>
+
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAVJ2_GIcilbf15Gnx7fp6WnQgkBSl3KYo&callback=myMap"></script>
+
+{% endblock %}
+
+{% block extend_footer %}
+
+<script type="text/javascript">
+
+    var google_api_key = "{{google_api_key|safe}}";
+
+  </script>
+
+  <script src="{% static 'google_places.js' %}"></script>
+
+{% endblock %}

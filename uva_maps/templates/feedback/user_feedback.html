@@ -1,0 +1,128 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- visit https://fonts.google.com/specimen/Courier+Prime?preview.text_type=custom to get script-->
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="{% static 'main.css' %}"></link>
+
+  {% block extend_head %}
+
+  {% endblock %}
+<style>
+    ul {
+        list-style-type: none; 
+        padding: 0; 
+        margin: 0; 
+    }
+
+  body {
+    overflow: hidden;
+  }
+
+  ul.sidenav {
+    width: 200px; 
+  }
+
+  .logo {
+    max-width: 150px; 
+  }
+
+  .div-container {
+    margin-left: 200px; 
+  }
+
+  h2 {
+    text-align: center;
+  }
+
+
+</style>
+</head>
+<body>
+
+  {% block extend_nav %}
+
+{% if user.is_staff %}
+  <ul class="sidenav">
+    <li class="logo-container">
+      <img src="{% static 'images/uvalogo.png' %}" alt="Logo" class="logo">
+    </li>
+    <li><a href="{% url 'route' %}">Directions</a></li>
+    <li><a class="active" href="{% url 'uva_maps:user_feedback' %}">Request a Location</a></li>
+    <li><a href="{% url 'uva_maps:admin_approval' %}">Approve Location Requests</a></li>
+    <li><a href="{% url 'account_logout' %}">Logout</a></li>
+  </ul>
+{% else %}
+  <ul class="sidenav">
+    <li class="logo-container">
+      <img src="{% static 'images/uvalogo.png' %}" alt="Logo" class="logo">
+    </li>
+    <li><a href="{% url 'route' %}">Directions</a></li>
+    <li><a class="active" href="{% url 'uva_maps:user_feedback' %}">Request a Location</a></li>
+    <li><a href="{% url 'account_logout' %}">Logout</a></li>
+  </ul>
+{% endif %}
+
+  {% endblock %}
+
+<div class="div-container">
+
+    {% block content %}
+
+  <h3>Submit Feedback</h3>
+  <p style="font-size: small;">Please be as specific as possible for all submissions with the proper capitalization and all fields of address filled. </p>
+    <form method="post" onsubmit="successAlert()">
+        {% csrf_token %}
+        {{ form.as_p }}
+      <button type="submit" style="background-color: #000080; color: white; border: none; padding: 10px 15px; cursor: pointer;">Submit</button>
+    </form>
+
+    <!-- {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}  -->
+
+    <script>
+    function successAlert() {
+        // Display the first message (assumes only one message)
+        alert("{{ messages.0 }} Feedback submitted successfully!");
+
+        // Automatically close the alert after 5 seconds
+        setTimeout(function () {
+            $(".alert").alert('close');
+        }, 5000);
+    }
+    </script>
+
+<!--     
+    {% if feedback_submitted %}
+    <script>
+        alert("Feedback submitted successfully!");
+        feedback_submitted=false
+    </script>
+  {% endif %}  -->
+
+    {% endblock %} 
+
+</div>
+
+  <!--visit https://code.jquery.com/ for jquery script-->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+
+  {% block extend_footer %}
+
+  {% endblock %}
+
+  <script src="{% static 'main.js' %}"></script>
+
+</body>
+</html>

@@ -1,0 +1,20 @@
+
+{% load socialaccount %}
+{% providers_media_js %}
+{% load static %}
+
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>UVA Maps</title>
+        {% block extend_head %}
+
+        {% endblock %}
+    </head>
+    <body>
+        <h1>Welcome to UVA Maps!</h1>
+        <a href = "{% provider_login_url "google" %}">Login with Google</a>
+        <script src="{% static 'main.js' %}"></script>
+    </body>
+</html>

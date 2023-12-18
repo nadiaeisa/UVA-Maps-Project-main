@@ -1,0 +1,134 @@
+<!-- 
+*  REFERENCES
+*  Title: Python Django Application Walkthrough Tutorial for Google Maps
+*  Author: Did Coding
+*  Date: 4/2/2021
+*  Code version: Django==3.1.7
+*  URL: https://www.youtube.com/watch?v=wCn8WND-JpU
+*  Software License: N/A 
+-->
+
+{% extends 'map/base.html' %}
+{% load static %}
+
+{% block extend_head %}
+
+<script src='https://www.google.com/recaptcha/api.js?render={{recaptcha_site_key}}'></script>
+
+{% endblock %}
+
+{% block extend_nav %} 
+
+{% if user.is_staff %}
+  <ul class="sidenav">
+    <li class="logo-container">
+      <img src="{% static 'images/uvalogo.png' %}" alt="Logo" class="logo">
+    </li>
+    <li><a href="{% url 'route' %}">Directions</a></li>
+    <li><a href="{% url 'uva_maps:user_feedback' %}">Request a Location</a></li>
+    <li><a href="{% url 'uva_maps:admin_approval' %}">Approve Location Requests</a></li>
+    <li><a href="{% url 'account_logout' %}">Logout</a></li>
+  </ul>
+{% else %}
+  <ul class="sidenav">
+    <li class="logo-container">
+      <img src="{% static 'images/uvalogo.png' %}" alt="Logo" class="logo">
+    </li>
+    <li><a href="{% url 'route' %}">Directions</a></li>
+    <li><a href="{% url 'uva_maps:user_feedback' %}">Request a Location</a></li>
+    <li><a href="{% url 'account_logout' %}">Logout</a></li>
+  </ul>
+{% endif %}
+
+{% endblock %}
+
+{% block content %}
+
+<h2 style="text-align: center; font-family: 'Georgia', sans-serif; color: #000000;">UVA Maps</h2>
+
+<div class="container">
+
+  <table>
+    <thead>
+      <tr>
+        <th>Field</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Start</td>
+        <td>{{directions.origin}}</td>      
+      </tr>
+      <tr>
+        <td>Destination</td>
+        <td>{{directions.destination}}</td>      
+      </tr>
+      <tr>
+        <td>Duration</td>
+        <td>{{directions.duration}}</td>      
+      </tr>
+      <tr>
+        <td>Distance</td>
+        <td>{{directions.distance}}</td>      
+      </tr>
+      <tr>
+        <td>Directions</td>
+        <td id="dir-toggle">click <a href="javascript:void(0)" onclick="DirectionsToggle()">here</a></td>      
+      </tr>
+
+      <a href="{% url 'route' %}" class="btn"
+        style="border-radius: 4px; text-align: center;background-color: #000080; color: white; font-family: 'Roboto', sans-serif; 
+            font-size: 16px; cursor: pointer; float: right; margin-top: -10px; margin-right: 0px; padding: 8px 10px; max-width: 18%; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">Pick
+        a New Location
+      </a>
+    </tbody>
+  </table>
+
+  <table id="dir-table" hidden>
+    <thead>
+      <tr>
+        <th>Directions</th>
+        <th>Distance</th>
+        <th>Duration</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for dist, dur, text in directions.steps %}
+      <tr>
+        <td>{{text|safe}}</td>
+        <td>{{dist}}</td>
+        <td>{{dur}}</td>   
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+</div>
+
+<div class="map-container">
+
+   <div id="map-route"></div>
+
+</div>
+
+{% endblock %}
+
+{% block extend_footer %}
+
+<script type="text/javascript">
+
+    var google_api_key = "{{google_api_key|safe}}";
+    var lat_a = {{lat_a|safe}};
+    var long_a = {{long_a|safe}};
+    var lat_b = {{lat_a|safe}};
+    var long_b = {{long_b|safe}};
+    var origin = "{{origin|safe}}";
+    var destination = "{{destination|safe}}";
+    var directions = {{directions|safe}};
+    
+  </script>
+
+  <script src="{% static 'google_maps.js' %}"></script>
+
+{% endblock %}

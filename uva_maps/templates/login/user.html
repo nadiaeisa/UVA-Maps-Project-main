@@ -1,0 +1,37 @@
+<!-- 
+*  REFERENCES
+*  Title: Set up Google Sign-In for Faster Django Login Experience
+*  Author: Akamai DevRel
+*  Date: 12/12/2022
+*  Code version: Django==3.2.10
+*  URL: https://www.youtube.com/watch?v=yO6PP0vEOMc
+*  Software License: N/A 
+-->
+{% load static %}
+{% load socialaccount %}
+{% providers_media_js %}
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>UVA Maps</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'main.css' %}">
+</head>
+
+<body class="user-page">
+    <div class="content-container">
+        <h1>Welcome, {{ user.username }}!</h1>
+        <p>Email: {{ user.email }}</p>
+        {% if user.is_staff %}
+        <p>Account Type: Admin User</p>
+        {% else %}
+        <p>Account Type: Regular User</p>
+        {% endif %}
+        <br>
+        <a href="{% url 'route' %}" class="maps-link">Go To UVA Maps</a>
+        <a href="{% url 'account_logout' %}" class="logout-link">Logout</a>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,138 @@
+ <!-- <form method="post" action="{% url 'uva_maps:admin_approval' %}">
+              {% csrf_token %} -->
+                  <!--
+                <input type="hidden" name="feedback_id" value="{{ feedback.id }}">
+                <label for="descriptionInput{{ feedback.id }}">Admin Description:</label>
+                <input type="text" id="descriptionInput{{ feedback.id }}" name="description" value="{{ feedback.description }}">
+                <button type="submit">Submit Description</button>
+            </form>
+              {% if feedback.status == 'approved' %} {% endif %}
+              <label for="descriptionInput{{ feedback.id }}">Edit Description:</label>
+              <input type="text" id="descriptionInput{{ feedback.id }}" placeholder="Enter description">
+    <button type="submit" onclick="updateDescription({{ feedback.id }})" style="...">Update</button>
+<script>
+  function updateDescription(feedbackId) {
+    var inputId = "descriptionInput" + feedbackId;
+    var userInput = document.getElementById(inputId).value;
+    document.getElementById("description" + feedbackId).value = userInput;
+}
+{% load static %}
+-->
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- visit https://fonts.google.com/specimen/Courier+Prime?preview.text_type=custom to get script-->
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="{% static 'main.css' %}"></link>
+
+  {% block extend_head %}
+
+  {% endblock %}
+<style>
+    ul {
+        list-style-type: none; 
+        padding: 0; 
+        margin: 0; 
+    }
+
+    ul.sidenav {
+    width: 200px; 
+  }
+
+  .logo {
+    max-width: 150px; 
+  }
+
+  .div-container {
+    margin-left: 200px; 
+  }
+
+  h2 {
+    text-align: center;
+  }
+</style>
+
+</head>
+<body>
+
+  {% block extend_nav %}
+
+  <ul class="sidenav">
+    <li class="logo-container">
+      <img src="{% static 'images/uvalogo.png' %}" alt="Logo" class="logo">
+    </li>
+    <li><a href="{% url 'route' %}">Directions</a></li>
+    <li><a href="{% url 'uva_maps:user_feedback' %}">Request a Location</a></li>
+    <li><a class="active" href="{% url 'uva_maps:admin_approval' %}">Approve Location Requests</a></li>
+    <li><a href="{% url 'account_logout' %}">Logout</a></li>
+  </ul>
+
+  {% endblock %}
+
+<div class="div-container">
+
+    {% block content %}
+      <h3>Feedback Dashboard</h3>
+      <ul style="list-style-type: none; padding: 0;">
+        {% for feedback in feedback_entries %}
+          <li style="border: 1px solid #ddd; margin-bottom: 10px; padding: 10px;">
+              <p>Place: {{ feedback.place }}</p>
+              <p>Address: {{ feedback.address }}</p>
+              <p>Justification: {{ feedback.justification }}</p>
+              <p>Description: {{ feedback.description }}</p>
+        {% if feedback.status == 'approved' %}
+          <form method="post" action="{% url 'uva_maps:update_description' %}">
+            {% csrf_token %}
+              <label>Update Description:</label>
+              <textarea name="newDescription" rows="5" cols="50">{{ feedback.description }}</textarea>
+              <input type="hidden" name="pk" value="{{feedback.id}}">
+              <button type="submit" value="New Update">Update</button>
+          </form>
+<script>
+</script>
+    <p id="displayDescription{{ feedback.id }}"></p> 
+                <br>
+              {% endif %}
+              <div style="display: flex; align-items: center;">
+                {% if feedback.status == 'pending' %}
+                  <form method="post" action="{% url 'uva_maps:approve_feedback' feedback.id %}" style="margin-right: 5px;">
+                    {% csrf_token %}
+                    <button type="submit" style="background-color: #4CAF50; color: white; border: none; padding: 10px 15px; cursor: pointer;">Approve</button>
+                  </form>
+                  <form method="post" action="{% url 'uva_maps:reject_feedback' feedback.id %}">
+                    {% csrf_token %}
+                    <button type="submit" style="background-color: #f44336; color: white; border: none; padding: 10px 15px; cursor: pointer;">Reject</button>
+                  </form>
+                {% else %}
+                  <form method="post" action="{% url 'uva_maps:reject_feedback' feedback.id %}">
+                    {% csrf_token %}
+                    <button type="submit" style="background-color: #f44336; color: white; border: none; padding: 10px 15px; cursor: pointer;">Remove</button>
+                  </form>
+                {% endif %}
+              </div>
+          </li>
+          {% empty %}
+          <li>No feedback available.</li>
+        {% endfor %}
+      </ul>
+
+    {% endblock %}
+
+</div>
+
+  <!--visit https://code.jquery.com/ for jquery script-->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+
+  {% block extend_footer %}
+
+  {% endblock %}
+
+  <script src="{% static 'main.js' %}"></script>
+
+</body>
+</html>

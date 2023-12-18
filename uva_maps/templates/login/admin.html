@@ -1,0 +1,24 @@
+{% load static %}
+{% load socialaccount %}
+{% providers_media_js %}
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>UVA Maps</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'main.css' %}">
+</head>
+
+<body class="user-page">
+    <div class="content-container">
+        <h1>Welcome, {{ user.username }}!</h1>
+        <p>Email: {{ user.email }}</p>
+        <p>Account Type: Admin User</p>
+        <br>
+        <a href="{% url 'route' %}" class="maps-link">Go To UVA Maps</a>
+        <a href="{% url 'account_logout' %}" class="logout-link">Logout</a>
+    </div>
+</body>
+
+</html>
