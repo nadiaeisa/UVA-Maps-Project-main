@@ -1,11 +1,3 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-24ddc0f5d75046c5622901739e7c5dd533143b0c8e959d652212380cedb1ea36.svg)](https://classroom.github.com/a/xHnRfY9D)
-# Django Practice Assessment
-
-__Name:__
-
-__Computing ID:__
-
-
 /***************************************************************************************
 *  REFERENCES
 *  Title: Python Django Application Walkthrough Tutorial for Google Maps
@@ -71,3 +63,9 @@ __Computing ID:__
 *  URL: https://developers.google.com/maps/documentation/javascript/geocoding#ReverseGeocoding
 *  Software License: Creative Commons Attribution 4.0 License, Apache 2.0 License 
 ***************************************************************************************/
+
+You can access the site at: https://cs3240-project-a-10-4f4353eef22e.herokuapp.com/uva_maps/login/
+
+ I, along with a team of students, developed this website employing Django and following the Scrum methodology as a means of assisting new undergraduate students at the University of Virginia with navigation around campus. 
+
+Some of my personal contributions include testing the site functionality as well as beta testing, contributing to the integration of Google login API and the Google Maps API, creating and automating features on the google map (such as markers for approved requests, descriptions, etc.), adding a geolocation feature to get your current address, and other stylistic, practical updates to the site. 
